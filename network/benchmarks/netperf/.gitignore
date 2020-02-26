@@ -1,6 +1,7 @@
 Dockerbuild/*
 Dockerbuildclient/*
 nptests
+launch
 netperf-w?.yaml
 *.csv
 *.jpg
