@@ -160,15 +160,6 @@ func init() {
 		{SourceNode: "netperf-w1", DestinationNode: "netperf-w2", Label: "2 iperf TCP. Same VM using Virtual IP", Type: iperfTcpTest, ClusterIP: true, MSS: mssMin},
 		{SourceNode: "netperf-w1", DestinationNode: "netperf-w3", Label: "3 iperf TCP. Remote VM using Pod IP", Type: iperfTcpTest, ClusterIP: false, MSS: mssMin},
 		{SourceNode: "netperf-w3", DestinationNode: "netperf-w2", Label: "4 iperf TCP. Remote VM using Virtual IP", Type: iperfTcpTest, ClusterIP: true, MSS: mssMin},
-		{SourceNode: "netperf-w2", DestinationNode: "netperf-w2", Label: "5 iperf TCP. Hairpin Pod to own Virtual IP", Type: iperfTcpTest, ClusterIP: true, MSS: mssMin},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w2", Label: "6 iperf UDP. Same VM using Pod IP", Type: iperfUdpTest, ClusterIP: false, MSS: mssMax},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w2", Label: "7 iperf UDP. Same VM using Virtual IP", Type: iperfUdpTest, ClusterIP: true, MSS: mssMax},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w3", Label: "8 iperf UDP. Remote VM using Pod IP", Type: iperfUdpTest, ClusterIP: false, MSS: mssMax},
-		{SourceNode: "netperf-w3", DestinationNode: "netperf-w2", Label: "9 iperf UDP. Remote VM using Virtual IP", Type: iperfUdpTest, ClusterIP: true, MSS: mssMax},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w2", Label: "10 netperf. Same VM using Pod IP", Type: netperfTest, ClusterIP: false},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w2", Label: "11 netperf. Same VM using Virtual IP", Type: netperfTest, ClusterIP: true},
-		{SourceNode: "netperf-w1", DestinationNode: "netperf-w3", Label: "12 netperf. Remote VM using Pod IP", Type: netperfTest, ClusterIP: false},
-		{SourceNode: "netperf-w3", DestinationNode: "netperf-w2", Label: "13 netperf. Remote VM using Virtual IP", Type: netperfTest, ClusterIP: true},
 	}
 
 	currentJobIndex = 0
@@ -605,7 +596,7 @@ func netperfServer() {
 func iperfClient(serverHost, serverPort string, mss int, workItemType int) (rv string) {
 	switch {
 	case workItemType == iperfTcpTest:
-		output, success := cmdExec(iperf3Path, []string{iperf3Path, "-c", serverHost, "-V", "-N", "-i", "30", "-t", "10", "-f", "m", "-w", "512M", "-Z", "-P", parallelStreams, "-M", strconv.Itoa(mss)}, 15)
+		output, success := cmdExec(iperf3Path, []string{iperf3Path, "-c", serverHost, "-V", "-N", "-i", "30", "-O", "10", "-t", "60", "-f", "m", "-w", "512M", "-Z", "-P", parallelStreams, "-M", strconv.Itoa(mss)}, 15)
 		if success {
 			rv = output
 		}
