@@ -14,7 +14,7 @@
 
 all: docker nptests push launch runtests
 
-DOCKERREPO       := girishkalele/netperf-latest
+DOCKERREPO       := xixuejia/netperf
 
 docker: nptests launch
 	mkdir -p Dockerbuild && \
@@ -23,7 +23,7 @@ docker: nptests launch
 	docker build -t $(DOCKERREPO) Dockerbuild/ 
 
 push: docker
-	gcloud docker push $(DOCKERREPO)
+	docker push $(DOCKERREPO)
 
 nptests: nptest/nptest.go
 	cd nptest; GOOS=linux GOARCH=amd64 make nptests
@@ -40,7 +40,7 @@ launch: launch.go
 # 'runtests' is the test runner target
 runtests: launch
 	@echo Launching network performance tests
-	./launch
+	./launch --kubeConfig=${HOME}/.kube/config --image=xixuejia/netperf
 	@echo Network performance tests complete - running matplotlib to generate graphs and copy them back
 	cp netperf-latest.csv plotperf && cd plotperf; make plot && mv *png .. && mv *svg ..
 	@echo Results file netperf-latest.csv and SVG/PNG graphs generated successfully
