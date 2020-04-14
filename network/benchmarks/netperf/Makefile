@@ -41,8 +41,6 @@ launch: launch.go
 runtests: launch
 	@echo Launching network performance tests
 	./launch --kubeConfig=${HOME}/.kube/config --image=xixuejia/netperf
-	@echo Network performance tests complete - running matplotlib to generate graphs and copy them back
-	cp netperf-latest.csv plotperf && cd plotperf; make plot && mv *png .. && mv *svg ..
-	@echo Results file netperf-latest.csv and SVG/PNG graphs generated successfully
+	@echo Network performance tests complete
 
 

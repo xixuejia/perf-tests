@@ -73,10 +73,10 @@ const (
 	netperfPath          = "/usr/local/bin/netperf"
 	netperfServerPath    = "/usr/local/bin/netserver"
 	outputCaptureFile    = "/tmp/output.txt"
-	mssMin               = 96
+	mssMin               = 160
 	mssMax               = 1460
-	mssStepSize          = 64
-	parallelStreams      = "8"
+	mssStepSize          = 100
+	parallelStreams      = "4"
 	rpcServicePort       = "5202"
 	localhostIPv4Address = "127.0.0.1"
 )
@@ -596,7 +596,7 @@ func netperfServer() {
 func iperfClient(serverHost, serverPort string, mss int, workItemType int) (rv string) {
 	switch {
 	case workItemType == iperfTcpTest:
-		output, success := cmdExec(iperf3Path, []string{iperf3Path, "-c", serverHost, "-V", "-N", "-i", "30", "-O", "10", "-t", "60", "-f", "m", "-w", "512M", "-Z", "-P", parallelStreams, "-M", strconv.Itoa(mss)}, 15)
+		output, success := cmdExec(iperf3Path, []string{iperf3Path, "-c", serverHost, "-V", "-N", "-i", "30", "-O", "10", "-t", "30", "-f", "m", "-w", "512M", "-Z", "-P", parallelStreams, "-M", strconv.Itoa(mss)}, 15)
 		if success {
 			rv = output
 		}
@@ -624,19 +624,25 @@ func netperfClient(serverHost, serverPort string, workItemType int) (rv string) 
 }
 
 func cmdExec(command string, args []string, timeout int32) (rv string, rc bool) {
-	cmd := exec.Cmd{Path: command, Args: args}
-
+	const RETRIES int = 10
+	const RETRY_TIME = 5 // 5s
 	var stdoutput bytes.Buffer
 	var stderror bytes.Buffer
+	cmd := exec.Cmd{Path: command, Args: args}
 	cmd.Stdout = &stdoutput
 	cmd.Stderr = &stderror
-	if err := cmd.Run(); err != nil {
+	err := cmd.Run()
+	for i := 0; err != nil && i < RETRIES;  i++{
 		outputstr := stdoutput.String()
 		errstr := stderror.String()
 		fmt.Println("Failed to run", outputstr, "error:", errstr, err)
-		return
+		time.Sleep(RETRY_TIME* time.Second)
+		cmd = exec.Cmd{Path: command, Args: args}
+		stderror, stdoutput = bytes.Buffer{}, bytes.Buffer{}
+		cmd.Stdout = &stdoutput
+		cmd.Stderr = &stderror
+		err = cmd.Run()
 	}
-
 	rv = stdoutput.String()
 	rc = true
 	return
